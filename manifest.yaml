@@ -1,20 +1,17 @@
 id: bitcoind
-title: "Bitcoin Core"
-version: 26.0.0
+title: "Bitcoin Knots"
+version: 25.1.0
 eos-version: 0.3.4.3
 release-notes: |
-  * Latest release from Core - see full release notes [here](https://github.com/bitcoin/bitcoin/blob/master/doc/release-notes/release-notes-26.0.md)
-  * Added support for v2 transport protocol (BIP 324)
-  * Update services base image to alpine 3.18
-  * Minor readme and instructions update
+  * Latest release from Knots - see full release notes [here](https://github.com/bitcoinknots/bitcoin/releases/tag/v25.1.knots20231115)
 license: MIT
 wrapper-repo: https://github.com/Start9Labs/bitcoind-wrapper
-upstream-repo: https://github.com/bitcoin/bitcoin
-support-site: https://github.com/bitcoin/bitcoin/issues
-marketing-site: https://bitcoincore.org/
+upstream-repo: https://github.com/bitcoinknots/bitcoin/
+support-site: https://github.com/bitcoinknots/bitcoin/issues
+marketing-site: https://bitcoinknots.org
 build: ["make"]
 description:
-  short: A Bitcoin Full Node by Bitcoin Core
+  short: A Bitcoin Full Node by Bitcoin Knots
   long: Bitcoin is an innovative payment network and a new kind of money. Bitcoin uses peer-to-peer technology to operate with no central authority or banks; managing transactions and the issuing of bitcoins is carried out collectively by the network. Bitcoin is open-source; its design is public, nobody owns or controls Bitcoin and everyone can take part. Through many of its unique properties, Bitcoin allows exciting uses that could not be covered by any previous payment system.
 assets:
   license: LICENSE

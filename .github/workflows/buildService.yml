@@ -4,14 +4,14 @@ on:
   workflow_dispatch:
   pull_request:
     paths-ignore: ['*.md']
-    branches: ['main', 'master']
+    branches: ['main', 'master', 'knots']
   push:
     paths-ignore: ['*.md']
-    branches: ['main', 'master']
+    branches: ['main', 'master', 'knots']
 
 jobs:
   BuildPackage:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Prepare StartOS SDK
         uses: Start9Labs/sdk@v1
