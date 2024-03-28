@@ -139,7 +139,7 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
       range: "[1,10000]",
       integral: true,
       units: "bytes",
-      default: 83,
+      default: 42,
     },
     permitbaremultisig: {
       type: "boolean",

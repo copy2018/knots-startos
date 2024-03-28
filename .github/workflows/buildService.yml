@@ -22,6 +22,7 @@ jobs:
       - name: Build the service package
         id: build
         run: |
+          sudo apt install -y librsvg2-bin librsvg2-2 imagemagick
           git submodule update --init --recursive
           start-sdk init
           make
