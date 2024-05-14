@@ -147,6 +147,18 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
       description: "Relay non-P2SH multisig",
       default: false,
     },
+    rejectparasites: {
+      type: "boolean",
+      name: "Reject Parasites",
+      description: "Reject parasites transactions",
+      default: true,
+    },
+    rejecttokens: {
+      type: "boolean",
+      name: "Reject Tokens",
+      description: "Reject tokens transactions (runes)",
+      default: false,
+    },
     txindex: {
       type: "boolean",
       name: "Transaction Index",

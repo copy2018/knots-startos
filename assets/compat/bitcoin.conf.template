@@ -138,6 +138,22 @@ permitbaremultisig=1
 permitbaremultisig=0
 }}
 
+## REJECTPARASITES
+{{#IF rejectparasites
+rejectparasites=1
+}}
+{{#IF !rejectparasites
+rejectparasites=0
+}}
+
+## REJECTTOKENS
+{{#IF rejecttokens
+rejecttokens=1
+}}
+{{#IF !rejecttokens
+rejecttokens=0
+}}
+
 ## BIP37
 {{#IF advanced.bloomfilters.peerbloomfilters
 peerbloomfilters=1
