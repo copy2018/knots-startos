@@ -121,36 +121,36 @@ txindex=1
 }}
 
 ## DATACARRIER
-{{#IF datacarrier
+{{#IF blkconstr.datacarrier
 datacarrier=1
 }}
-{{#IF !datacarrier
+{{#IF !blkconstr.datacarrier
 datacarrier=0
 }}
 
-datacarriersize={{datacarriersize}}
+datacarriersize={{blkconstr.datacarriersize}}
 
 ## PERMITBAREMULTISIG
-{{#IF permitbaremultisig
+{{#IF blkconstr.permitbaremultisig
 permitbaremultisig=1
 }}
-{{#IF !permitbaremultisig
+{{#IF !blkconstr.permitbaremultisig
 permitbaremultisig=0
 }}
 
 ## REJECTPARASITES
-{{#IF rejectparasites
+{{#IF blkconstr.rejectparasites
 rejectparasites=1
 }}
-{{#IF !rejectparasites
+{{#IF !blkconstr.rejectparasites
 rejectparasites=0
 }}
 
 ## REJECTTOKENS
-{{#IF rejecttokens
+{{#IF blkconstr.rejecttokens
 rejecttokens=1
 }}
-{{#IF !rejecttokens
+{{#IF !blkconstr.rejecttokens
 rejecttokens=0
 }}
 
@@ -165,4 +165,42 @@ blockfilterindex=basic
 }}
 {{#IF advanced.blockfilters.peerblockfilters
 peerblockfilters=1
+}}
+
+## BLKCONSTR
+
+minrelaytxfee={{blkconstr.minrelaytxfee}}
+
+bytespersigop={{blkconstr.bytespersigop}}
+
+bytespersigopstrict={{blkconstr.bytespersigopstrict}}
+
+limitancestorcount={{blkconstr.limitancestorcount}}
+
+limitancestorsize={{blkconstr.limitancestorsize}}
+
+limitdescendantcount={{blkconstr.limitdescendantcount}}
+
+limitdescendantsize={{blkconstr.limitdescendantsize}}
+
+maxscriptsize={{blkconstr.maxscriptsize}}
+
+datacarriercost={{blkconstr.datacarriercost}}
+
+dustrelayfee={{blkconstr.dustrelayfee}}
+
+## BAREPUBKEY
+{{#IF blkconstr.permitbarepubkey
+permitbarepubkey=1
+}}
+{{#IF !blkconstr.permitbarepubkey
+permitbarepubkey=0
+}}
+
+## ACCEPTNONSTDDATACARRIER
+{{#IF blkconstr.acceptnonstddatacarrier
+acceptnonstddatacarrier=1
+}}
+{{#IF !blkconstr.acceptnonstddatacarrier
+acceptnonstddatacarrier=0
 }}
