@@ -5,12 +5,16 @@
 ## RPC
 {{#IF rpc.enable
 {{#IF advanced.pruning.mode = "automatic"
+{{#IF !advanced.testnet
 rpcbind=127.0.0.1:18332
 rpcallowip=127.0.0.1/32
 }}
+}}
 {{#IF advanced.pruning.mode != "automatic"
+{{#IF !advanced.testnet
 rpcbind=0.0.0.0:8332
 rpcallowip=0.0.0.0/0
+}}
 }}
 }}
 rpcuser={{rpc.username}}
@@ -41,7 +45,9 @@ mempoolexpiry={{advanced.mempool.mempoolexpiry}}
 ## PEERS
 {{#IF advanced.peers.listen
 listen=1
+{{#IF !advanced.testnet
 bind=0.0.0.0:8333
+}}
 }}
 {{#IF !advanced.peers.listen
 listen=0
@@ -203,4 +209,8 @@ acceptnonstddatacarrier=1
 }}
 {{#IF !blkconstr.acceptnonstddatacarrier
 acceptnonstddatacarrier=0
+}}
+
+{{#IF advanced.testnet
+testnet=1
 }}

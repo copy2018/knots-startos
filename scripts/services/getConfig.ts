@@ -518,6 +518,12 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
             },
           },
         },
+        testnet: {
+          type: "boolean",
+          name: "Testnet (EXPERIMENTAL)",
+          description: "Use testnet instead of mainnet",
+          default: false,
+        },
       },
     },
   })(effects);
