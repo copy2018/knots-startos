@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
   pull_request:
     paths-ignore: ['*.md']
-    branches: ['main', 'master', 'knots', 'knots-for-community']
+    branches: ['main', 'master', 'knots', 'knots-for-community', 'new-config']
   push:
     paths-ignore: ['*.md']
-    branches: ['main', 'master', 'knots', 'knots-for-community']
+    branches: ['main', 'master', 'knots', 'knots-for-community', 'new-config']
 
 jobs:
   BuildPackage:
