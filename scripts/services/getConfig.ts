@@ -69,9 +69,9 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
           description:
             "Fee rates (in BTC/kB) smaller than this are considered zero fee for relaying, mining and transaction creation",
           range: "[0,21000000]",
-          integral: true,
+          integral: false,
           units: "BTC/kvB",
-          default: 1000,
+          default: 0.00001,
         },
         bytespersigop: {
           type: "number",
@@ -180,9 +180,9 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
           description:
             "Fee rate (in BTC/kvB) used to define dust, the value of an output such that it will cost more than its value in fees at this fee rate to spend it.",
           range: "[0,*)",
-          integral: true,
+          integral: false,
           units: "BTC/kvB",
-          default: 3000,
+          default: 0.00003,
         },
       }
     },
