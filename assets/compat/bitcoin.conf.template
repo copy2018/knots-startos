@@ -27,20 +27,20 @@ rpcthreads={{rpc.advanced.threads}}
 rpcworkqueue={{rpc.advanced.workqueue}}
 
 ## MEMPOOL
-{{#IF advanced.mempool.mempoolfullrbf
+{{#IF blkconstr.mempoolfullrbf
 mempoolfullrbf=1
 }}
-{{#IF !advanced.mempool.mempoolfullrbf
+{{#IF !blkconstr.mempoolfullrbf
 mempoolfullrbf=0
 }}
-{{#IF advanced.mempool.persistmempool
+{{#IF blkconstr.persistmempool
 persistmempool=1
 }}
-{{#IF !advanced.mempool.persistmempool
+{{#IF !blkconstr.persistmempool
 persistmempool=0
 }}
-maxmempool={{advanced.mempool.maxmempool}}
-mempoolexpiry={{advanced.mempool.mempoolexpiry}}
+maxmempool={{blkconstr.maxmempool}}
+mempoolexpiry={{blkconstr.mempoolexpiry}}
 
 ## PEERS
 {{#IF advanced.peers.listen

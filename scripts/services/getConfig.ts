@@ -24,7 +24,7 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
     },
     blkconstr: {
       type: "object",
-      name: "Template Construction",
+      name: "Mempool",
       description: "Options about standard policies and mining block templates",
       spec: {
         datacarrier: {
@@ -60,6 +60,41 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
           type: "boolean",
           name: "Reject Tokens",
           description: "Reject tokens transactions (runes)",
+          default: false,
+        },
+        persistmempool: {
+          type: "boolean",
+          name: "Persist Mempool",
+          description: "Save the mempool on shutdown and load on restart.",
+          default: true,
+        },
+        maxmempool: {
+          type: "number",
+          nullable: false,
+          name: "Max Mempool Size",
+          description:
+            "Keep the transaction memory pool below <n> megabytes.",
+          range: "[1,*)",
+          integral: true,
+          units: "MiB",
+          default: 300,
+        },
+        mempoolexpiry: {
+          type: "number",
+          nullable: false,
+          name: "Mempool Expiration",
+          description:
+            "Do not keep transactions in the mempool longer than <n> hours.",
+          range: "[1,*)",
+          integral: true,
+          units: "Hr",
+          default: 336,
+        },
+        mempoolfullrbf: {
+          name: "Enable Full RBF",
+          description:
+            "Policy for your node to use for relaying and mining unconfirmed transactions.  For details, see https://github.com/bitcoin/bitcoin/blob/master/doc/release-notes/release-notes-24.0.md#notice-of-new-option-for-transaction-replacement-policies",
+          type: "boolean",
           default: false,
         },
         minrelaytxfee: {
@@ -330,48 +365,6 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
       name: "Advanced",
       description: "Advanced Settings",
       spec: {
-        mempool: {
-          type: "object",
-          name: "Mempool",
-          description: "Mempool Settings",
-          spec: {
-            persistmempool: {
-              type: "boolean",
-              name: "Persist Mempool",
-              description: "Save the mempool on shutdown and load on restart.",
-              default: true,
-            },
-            maxmempool: {
-              type: "number",
-              nullable: false,
-              name: "Max Mempool Size",
-              description:
-                "Keep the transaction memory pool below <n> megabytes.",
-              range: "[1,*)",
-              integral: true,
-              units: "MiB",
-              default: 300,
-            },
-            mempoolexpiry: {
-              type: "number",
-              nullable: false,
-              name: "Mempool Expiration",
-              description:
-                "Do not keep transactions in the mempool longer than <n> hours.",
-              range: "[1,*)",
-              integral: true,
-              units: "Hr",
-              default: 336,
-            },
-            mempoolfullrbf: {
-              name: "Enable Full RBF",
-              description:
-                "Policy for your node to use for relaying and mining unconfirmed transactions.  For details, see https://github.com/bitcoin/bitcoin/blob/master/doc/release-notes/release-notes-24.0.md#notice-of-new-option-for-transaction-replacement-policies",
-              type: "boolean",
-              default: false,
-            },
-          },
-        },
         peers: {
           type: "object",
           name: "Peers",

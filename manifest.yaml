@@ -1,6 +1,6 @@
 id: bitcoind
 title: "Bitcoin Knots"
-version: 27.1.3
+version: 27.1.4
 eos-version: 0.3.4.3
 release-notes: |
   * Latest release from Knots - see full release notes [here](https://github.com/bitcoinknots/bitcoin/releases/tag/v27.1.knots20240801)
