@@ -253,6 +253,32 @@ export const migration: T.ExpectedExports.migration =
           { version: "26.1.0", type: "down" }
         ),
       },
+      "27.1.4": {
+        up: compat.migrations.updateConfig(
+          (config: any) => {
+            config.blkconstr.persistmempool = true;
+            config.blkconstr.maxmempool = 300;
+            config.blkconstr.mempoolexpiry = 336;
+            config.blkconstr.mempoolfullrbf = true;
+
+            return config;
+          },
+          true,
+          { version: "27.1.4", type: "up" }
+        ),
+        down: compat.migrations.updateConfig(
+          (config: any) => {
+            delete config.blkconstr.persistmempool;
+            delete config.blkconstr.maxmempool;
+            delete config.blkconstr.mempoolexpiry;
+            delete config.blkconstr.mempoolfullrbf;
+
+            return config;
+          },
+          true,
+          { version: "27.1.4", type: "down" }
+        ),
+      },
     },
-    "26.1.0"
+    "27.1.4"
   );
