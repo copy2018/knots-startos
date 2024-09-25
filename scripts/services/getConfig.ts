@@ -474,6 +474,14 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
           integral: true,
           units: "MiB",
         },
+        blocknotify: {
+          type: "string",
+          nullable: true,
+          name: "Block notify",
+          description:
+            "Execute command when the best block changes",
+          warning: "You will need to restart all services that depend on Bitcoin.",
+        },
         blockfilters: {
           type: "object",
           name: "Block Filters",

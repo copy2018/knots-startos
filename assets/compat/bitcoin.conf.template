@@ -214,3 +214,7 @@ acceptnonstddatacarrier=0
 {{#IF advanced.testnet
 testnet=1
 }}
+
+{{#IF advanced.blocknotify
+blocknotify={{advanced.blocknotify}}
+}}
