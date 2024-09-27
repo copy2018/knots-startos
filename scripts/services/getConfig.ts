@@ -482,7 +482,7 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
             "Execute command when the best block changes",
           warning: "You will need to restart all services that depend on Bitcoin.",
         },
-        template_construction: {
+        templateconstruction: {
           type: "object",
           name: "Template Construction",
           description: "Set limits for block size/weight",

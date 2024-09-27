@@ -218,3 +218,11 @@ testnet=1
 {{#IF advanced.blocknotify
 blocknotify={{advanced.blocknotify}}
 }}
+
+{{#IF advanced.templateconstruction.blockmaxsize
+blockmaxsize={{advanced.templateconstruction.blockmaxsize}}
+}}
+
+{{#IF advanced.templateconstruction.blockmaxweight
+blockmaxweight={{advanced.templateconstruction.blockmaxweight}}
+}}
