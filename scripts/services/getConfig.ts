@@ -482,6 +482,31 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
             "Execute command when the best block changes",
           warning: "You will need to restart all services that depend on Bitcoin.",
         },
+        templateconstruction: {
+          type: "object",
+          name: "Template Construction",
+          description: "Set limits for block size/weight",
+          spec: {
+            blockmaxsize: {
+              type: "number",
+              name: "Max Block Size",
+              description: "Maximum block size in bytes",
+              integral: true,
+              range: "[100000,3985000]",
+              default: 3985000,
+              nullable: false,
+              },
+            blockmaxweight: {
+              type: "number",
+              name: "Max Block Size",
+              description: "Maximum block weight in vBytes",
+              integral: true,
+              range: "[100000,3985000]",
+              default: 3985000,
+              nullable: false,
+            },
+          },
+        },
         blockfilters: {
           type: "object",
           name: "Block Filters",
