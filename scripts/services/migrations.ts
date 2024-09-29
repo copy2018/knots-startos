@@ -261,6 +261,11 @@ export const migration: T.ExpectedExports.migration =
             config.blkconstr.mempoolexpiry = 336;
             config.blkconstr.mempoolfullrbf = true;
 
+            config.advanced.templateconstruction = {
+              blockmaxsize : 3985000,
+              blockmaxweight : 3985000,
+            };
+
             return config;
           },
           true,
@@ -272,6 +277,8 @@ export const migration: T.ExpectedExports.migration =
             delete config.blkconstr.maxmempool;
             delete config.blkconstr.mempoolexpiry;
             delete config.blkconstr.mempoolfullrbf;
+            delete config.advanced.templateconstruction.blockmaxsize;
+            delete config.advanced.templateconstruction.blockmaxweight;
 
             return config;
           },
