@@ -256,10 +256,12 @@ export const migration: T.ExpectedExports.migration =
       "27.1.4": {
         up: compat.migrations.updateConfig(
           (config: any) => {
-            config.blkconstr.persistmempool = true;
-            config.blkconstr.maxmempool = 300;
-            config.blkconstr.mempoolexpiry = 336;
-            config.blkconstr.mempoolfullrbf = true;
+            config.blkconstr = {
+              persistmempool : true,
+              maxmempool : 300,
+              mempoolexpiry : 336,
+              mempoolfullrbf : true,
+            }
 
             config.advanced.templateconstruction = {
               blockmaxsize : 3985000,
