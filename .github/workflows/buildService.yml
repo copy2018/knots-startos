@@ -31,7 +31,7 @@ jobs:
         shell: bash
 
       - name: Upload .s9pk
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.build.outputs.package_id }}.s9pk
           path: ./${{ steps.build.outputs.package_id }}.s9pk
