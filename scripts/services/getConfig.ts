@@ -498,7 +498,7 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
               },
             blockmaxweight: {
               type: "number",
-              name: "Max Block Size",
+              name: "Max Block Weight",
               description: "Maximum block weight in vBytes",
               integral: true,
               range: "[100000,3985000]",
