@@ -3,6 +3,10 @@
 ##
 
 ## RPC
+{{#IF !rpc.enable
+server=0
+}}
+
 {{#IF rpc.enable
 {{#IF advanced.pruning.mode = "automatic"
 rpcbind=127.0.0.1:18332
