@@ -161,6 +161,46 @@ actions:
       - stopped
     implementation:
       type: script
+  prioritise-transaction:
+    name: "Prioritise Transaction"
+    description: "Prioritise or de-prioritise a transaction. Your Bitcoin node will treat it as though it is paying a higher or lower fee rate than it is and construct templates accordingly."
+    allowed-statuses:
+      - running
+    implementation:
+      type: docker
+      image: main
+      system: false
+      entrypoint: prioritise-transaction.sh
+      args: []
+      io-format: json
+      mounts:
+        main: /root/.bitcoin
+      inject: true
+    input-spec:
+      txid:
+        type: string
+        name: Transaction ID
+        description: "The ID of the transaction you wish to prioritise."
+        placeholder: ""
+        nullable: false
+      priority-delta:
+        type: number
+        name: Priority Delta
+        description: "The priority to add or subtract."
+        nullable: true
+        integral: true
+        range: "[-1000000,1000000]"
+        default: 0
+        nullable: true
+      fee-delta:
+        type: number
+        name: Fee Delta
+        description: "The fee value (in satoshis) to add (or subtract, if negative)."
+        nullable: true
+        integral: true
+        range: "[-1000000,1000000]"
+        default: 0
+        nullable: true
 migrations:
   from:
     "*":
