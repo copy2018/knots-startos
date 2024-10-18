@@ -253,7 +253,7 @@ export const migration: T.ExpectedExports.migration =
           { version: "26.1.0", type: "down" }
         ),
       },
-      "27.1.4": {
+      "27.1.0": {
         up: compat.migrations.updateConfig(
           (config: any) => {
             config.blkconstr = {
@@ -271,7 +271,7 @@ export const migration: T.ExpectedExports.migration =
             return config;
           },
           true,
-          { version: "27.1.4", type: "up" }
+          { version: "27.1.0", type: "up" }
         ),
         down: compat.migrations.updateConfig(
           (config: any) => {
@@ -285,9 +285,9 @@ export const migration: T.ExpectedExports.migration =
             return config;
           },
           true,
-          { version: "27.1.4", type: "down" }
+          { version: "27.1.0", type: "down" }
         ),
       },
     },
-    "27.1.4"
+    "27.1.0"
   );
