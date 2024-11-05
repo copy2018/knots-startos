@@ -168,6 +168,35 @@ fn sidecar(config: &Mapping, addr: &str) -> Result<(), Box<dyn Error>> {
             },
         );
     }
+    // New section to calculate halving progress
+    let blockchain_info = std::process::Command::new("bitcoin-cli")
+    .arg("-conf=/root/.bitcoin/bitcoin.conf")
+    .arg("getblockchaininfo")
+    .output()?;
+
+    if blockchain_info.status.success() {
+        let blockchain_data: serde_json::Value = serde_json::from_slice(&blockchain_info.stdout)?;
+        let current_height = blockchain_data["blocks"].as_u64().unwrap_or(0);
+
+        // Calculate the last halving block and progress towards the next halving
+        let halving_interval = 210_000;
+        let last_halving_block = (current_height / halving_interval) * halving_interval;
+        let blocks_since_last_halving = current_height - last_halving_block;
+        let progress_to_next_halving = (blocks_since_last_halving as f64 / halving_interval as f64) * 100.0;
+
+        stats.insert(
+            Cow::from("Progress to Next Halving"),
+            Stat {
+                value_type: "string",
+                value: format!("{:.2}%", progress_to_next_halving),
+                description: Some(Cow::from("Percentage of blocks completed until the next Bitcoin halving")),
+                copyable: false,
+                qr: false,
+                masked: false,
+            },
+        );
+    }
+
 
     // New section to fetch mempool statistics
     let mempool_info = std::process::Command::new("bitcoin-cli")
