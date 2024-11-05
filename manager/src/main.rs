@@ -168,6 +168,68 @@ fn sidecar(config: &Mapping, addr: &str) -> Result<(), Box<dyn Error>> {
             },
         );
     }
+
+    // New section to fetch mempool statistics
+    let mempool_info = std::process::Command::new("bitcoin-cli")
+        .arg("-conf=/root/.bitcoin/bitcoin.conf")
+        .arg("getmempoolinfo")
+        .output()?;
+
+    if mempool_info.status.success() {
+        let mempool_data: serde_json::Value = serde_json::from_slice(&mempool_info.stdout)?;
+
+        let max_mempool = mempool_data["maxmempool"].as_u64().unwrap_or(0) as f64 / 1024_f64.powf(2.0); // Convert bytes to MB
+        let mempool_usage = mempool_data["usage"].as_u64().unwrap_or(0) as f64 / 1024_f64.powf(2.0); // Convert bytes to MB
+        let mempool_percent = if max_mempool > 0.0 {
+            (mempool_usage / max_mempool) * 100.0
+        } else {
+            0.0
+        };
+        let tx_count = mempool_data["size"].as_u64().unwrap_or(0); // Number of transactions
+
+        stats.insert(
+            Cow::from("Max Mempool Size"),
+            Stat {
+                value_type: "string",
+                value: format!("{:.2} MB", max_mempool),
+                description: Some(Cow::from("Maximum memory pool size")),
+                copyable: false,
+                qr: false,
+                masked: false,
+            },
+        );
+
+        stats.insert(
+            Cow::from("Current Mempool Usage"),
+            Stat {
+                value_type: "string",
+                value: format!("{:.2} MB ({:.2}%)", mempool_usage, mempool_percent),
+                description: Some(Cow::from("Current memory pool usage as a percentage of max size")),
+                copyable: false,
+                qr: false,
+                masked: false,
+            },
+        );
+
+        stats.insert(
+            Cow::from("Mempool Transaction Count"),
+            Stat {
+                value_type: "string",
+                value: format!("{}", tx_count),
+                description: Some(Cow::from("Current number of transactions in the mempool")),
+                copyable: false,
+                qr: false,
+                masked: false,
+            },
+        );
+    } else {
+        eprintln!(
+            "Error retrieving mempool info: {}",
+            std::str::from_utf8(&mempool_info.stderr).unwrap_or("UNKNOWN ERROR")
+        );
+    }
+
+    // Existing code for blockchain and network info retrieval continues here...
     let info_res = std::process::Command::new("bitcoin-cli")
         .arg("-conf=/root/.bitcoin/bitcoin.conf")
         .arg("getblockchaininfo")
