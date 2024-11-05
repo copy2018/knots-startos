@@ -168,6 +168,121 @@ fn sidecar(config: &Mapping, addr: &str) -> Result<(), Box<dyn Error>> {
             },
         );
     }
+    
+    // Calculate total supply and progress to the next halving
+    let blockchain_info = std::process::Command::new("bitcoin-cli")
+        .arg("-conf=/root/.bitcoin/bitcoin.conf")
+        .arg("getblockchaininfo")
+        .output()?;
+
+    if blockchain_info.status.success() {
+        let blockchain_data: serde_json::Value = serde_json::from_slice(&blockchain_info.stdout)?;
+        let current_height = blockchain_data["blocks"].as_u64().unwrap_or(0);
+
+        // Calculate total supply based on height and halving intervals
+        let halving_interval = 210_000;
+        let mut subsidy = 50.0; // Initial subsidy in BTC
+        let mut total_supply = 0.0;
+        let mut remaining_height = current_height;
+
+        while remaining_height > 0 {
+            let blocks_in_this_epoch = remaining_height.min(halving_interval);
+            total_supply += blocks_in_this_epoch as f64 * subsidy;
+            remaining_height = remaining_height.saturating_sub(halving_interval);
+            subsidy /= 2.0;
+        }
+
+        stats.insert(
+            Cow::from("Total Bitcoin Supply"),
+            Stat {
+                value_type: "string",
+                value: format!("{:.8} BTC", total_supply),
+                description: Some(Cow::from("Current total supply of Bitcoin based on issuance schedule")),
+                copyable: false,
+                qr: false,
+                masked: false,
+            },
+        );
+
+        // Progress to Next Halving calculation
+        let last_halving_block = (current_height / halving_interval) * halving_interval;
+        let blocks_since_last_halving = current_height - last_halving_block;
+        let progress_to_next_halving = (blocks_since_last_halving as f64 / halving_interval as f64) * 100.0;
+
+        stats.insert(
+            Cow::from("Progress to Next Halving"),
+            Stat {
+                value_type: "string",
+                value: format!("{:.2}%", progress_to_next_halving),
+                description: Some(Cow::from("Percentage of blocks completed until the next Bitcoin halving")),
+                copyable: false,
+                qr: false,
+                masked: false,
+            },
+        );
+    }
+
+    // New section to fetch mempool statistics
+    let mempool_info = std::process::Command::new("bitcoin-cli")
+        .arg("-conf=/root/.bitcoin/bitcoin.conf")
+        .arg("getmempoolinfo")
+        .output()?;
+
+    if mempool_info.status.success() {
+        let mempool_data: serde_json::Value = serde_json::from_slice(&mempool_info.stdout)?;
+
+        let max_mempool = mempool_data["maxmempool"].as_u64().unwrap_or(0) as f64 / 1024_f64.powf(2.0); // Convert bytes to MB
+        let mempool_usage = mempool_data["usage"].as_u64().unwrap_or(0) as f64 / 1024_f64.powf(2.0); // Convert bytes to MB
+        let mempool_percent = if max_mempool > 0.0 {
+            (mempool_usage / max_mempool) * 100.0
+        } else {
+            0.0
+        };
+        let tx_count = mempool_data["size"].as_u64().unwrap_or(0); // Number of transactions
+
+        stats.insert(
+            Cow::from("Max Mempool Size"),
+            Stat {
+                value_type: "string",
+                value: format!("{:.2} MB", max_mempool),
+                description: Some(Cow::from("Maximum memory pool size")),
+                copyable: false,
+                qr: false,
+                masked: false,
+            },
+        );
+
+        stats.insert(
+            Cow::from("Current Mempool Usage"),
+            Stat {
+                value_type: "string",
+                value: format!("{:.2} MB ({:.2}%)", mempool_usage, mempool_percent),
+                description: Some(Cow::from("Current memory pool usage as a percentage of max size")),
+                copyable: false,
+                qr: false,
+                masked: false,
+            },
+        );
+
+        stats.insert(
+            Cow::from("Mempool Transaction Count"),
+            Stat {
+                value_type: "string",
+                value: format!("{}", tx_count),
+                description: Some(Cow::from("Current number of transactions in the mempool")),
+                copyable: false,
+                qr: false,
+                masked: false,
+            },
+        );
+    } else {
+        eprintln!(
+            "Error retrieving mempool info: {}",
+            std::str::from_utf8(&mempool_info.stderr).unwrap_or("UNKNOWN ERROR")
+        );
+    }
+
+    // Existing code for blockchain and network info retrieval continues here...
     let info_res = std::process::Command::new("bitcoin-cli")
         .arg("-conf=/root/.bitcoin/bitcoin.conf")
         .arg("getblockchaininfo")
