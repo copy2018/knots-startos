@@ -2,9 +2,15 @@
   <img src="icon.png" alt="Project Logo" width="21%">
 </p>
 
-# Bitcoin Core for StartOS
+# Bitcoin Knots for StartOS
 
-This project packages [Bitcoin](https://bitcoin.org) for StartOS. Bitcoin uses peer-to-peer technology to operate with no central authority or banks - managing transactions and the issuing of bitcoins is carried out collectively by the network. 
+This project packages [Bitcoin Knots](https://bitcoinknots.org/) for StartOS.
+
+By using Knots, you’re supporting a version of Bitcoin that prioritizes efficiency, security, and flexibility. With Bitcoin Knots’ enhanced configuration options, you can fine-tune your node to help keep the network clean and resilient, actively reducing unnecessary load from spam or parasitic transactions.
+
+Every node strengthens the Bitcoin network, and your decision to use Bitcoin Knots contributes directly to a more decentralized and spam-resistant ecosystem. Your node not only validates and secures transactions but also sets an example for a more sustainable, user-focused Bitcoin network.
+
+Welcome to the community of Bitcoin Knots users, and thank you for helping Bitcoin grow stronger!
 
 ## Contributing
 
@@ -16,7 +22,7 @@ For technical contributors, please fork this repository, make your changes accor
 
 ### Adding Config Options
 
-To add config options, include the new config options in *both* `scripts/services/getConfig.ts` and `assets/compat/bitcoin.conf.template`, adhering to the syntax and conventions of those files. To view the full list of config options, complete with descriptions and specifications, check out this [site](https://jlopp.github.io/bitcoin-core-config-generator) from Jameson Lopp.
+To add config options, include the new config options in *both* `scripts/services/getConfig.ts` and `assets/compat/bitcoin.conf.template`, adhering to the syntax and conventions of those files. To view the full list of config options, complete with descriptions and specifications, check out this [site](https://config.mempool.guide).
 
 ## Dependencies
 
@@ -35,8 +41,8 @@ Install the following system dependencies to build this project by following the
 Clone the project locally. Note the submodule link to the original project(s). 
 
 ```
-git clone git@github.com:Start9Labs/bitcoind-wrapper.git
-cd bitcoind-wrapper
+git clone https://github.com/Retropex/knots-startos.git
+cd knots-startos
 git submodule update --init
 ```
 
