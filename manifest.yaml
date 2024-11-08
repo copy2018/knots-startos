@@ -1,6 +1,6 @@
 id: bitcoind
 title: "Bitcoin Knots"
-version: 27.1.0
+version: 27.1.0.2
 eos-version: 0.3.5.1
 release-notes: |
   * Latest release from Knots - see full release notes [here](https://github.com/bitcoinknots/bitcoin/releases/tag/v27.1.knots20240801)
@@ -150,14 +150,6 @@ actions:
     name: "Delete Transaction Index"
     description: "Deletes the Transaction Index (txindex) in case it gets corrupted."
     warning: The Transaction Index will be rebuilt once Bitcoin Knots is started again, unless you deactivate it in the config settings. Please don't do this unless instructed to by Start9 support staff.
-    allowed-statuses:
-      - stopped
-    implementation:
-      type: script
-  delete-coinstatsindex:
-    name: "Delete Coinstats Index"
-    description: "Deletes the Coinstats Index (coinstatsindex) in case it gets corrupted."
-    warning: The Coinstats Index will be rebuilt once Bitcoin Core is started again, unless you deactivate it in the config settings. Please don't do this unless instructed to by Start9 support staff.
     allowed-statuses:
       - stopped
     implementation:
