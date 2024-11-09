@@ -507,76 +507,31 @@ if mempool_info.status.success() {
             std::str::from_utf8(&info_res.stderr).unwrap_or("UNKNOWN ERROR")
         );
     }
-    // Detailed peer info by network type
-    let peer_info = std::process::Command::new("bitcoin-cli")
+    let info_res = std::process::Command::new("bitcoin-cli")
         .arg("-conf=/root/.bitcoin/bitcoin.conf")
-        .arg("getpeerinfo")
+        .arg("getnetworkinfo")
         .output()?;
-
-    if peer_info.status.success() {
-        let peers: Vec<serde_json::Value> = serde_json::from_slice(&peer_info.stdout)?;
-        let mut clearnet_in = 0;
-        let mut clearnet_out = 0;
-        let mut tor_in = 0;
-        let mut tor_out = 0;
-        let mut i2p_in = 0;
-        let mut i2p_out = 0;
-
-        for peer in peers {
-            let network = peer["network"].as_str().unwrap_or("");
-            let inbound = peer["inbound"].as_bool().unwrap_or(false);
-
-            match network {
-                "ipv4" | "ipv6" => {
-                    if inbound {
-                        clearnet_in += 1;
-                    } else {
-                        clearnet_out += 1;
-                    }
-                }
-                "onion" => {
-                    if inbound {
-                        tor_in += 1;
-                    } else {
-                        tor_out += 1;
-                    }
-                }
-                "i2p" => {
-                    if inbound {
-                        i2p_in += 1;
-                    } else {
-                        i2p_out += 1;
-                    }
-                }
-                _ => {}
-            }
-        }
-
-        let total_in = clearnet_in + tor_in + i2p_in;
-        let total_out = clearnet_out + tor_out + i2p_out;
-        let total_connections = total_in + total_out;
-
+    if info_res.status.success() {
+        let info: NetworkInfo = serde_json::from_slice(&info_res.stdout)?;
         stats.insert(
-            Cow::from("Peer Connection Summary"),
+            Cow::from("Connections"),
             Stat {
                 value_type: "string",
-                value: format!(
-                    "Total: {} | Clearnet: In-{}, Out-{} | Tor: In-{}, Out-{} | I2P: In-{}, Out-{}",
-                    total_connections, clearnet_in, clearnet_out, tor_in, tor_out, i2p_in, i2p_out
-                ),
-                description: Some(Cow::from("Summary of peer connections by type: Clearnet, Tor, I2P")),
+                value: format!("{} ({} in / {} out)", info.connections, info.connections_in, info.connections_out),
+                description: Some(Cow::from("The number of peers connected (inbound and outbound)")),
                 copyable: false,
                 qr: false,
                 masked: false,
             },
         );
+    } else if info_res.status.code() == Some(28) {
+        return Ok(());
     } else {
         eprintln!(
-            "Error retrieving peer info: {}",
-            std::str::from_utf8(&peer_info.stderr).unwrap_or("UNKNOWN ERROR")
+            "Error updating network info: {}",
+            std::str::from_utf8(&info_res.stderr).unwrap_or("UNKNOWN ERROR")
         );
     }
-
     serde_yaml::to_writer(
         std::fs::File::create("/root/.bitcoin/start9/.stats.yaml.tmp")?,
         &Stats {
