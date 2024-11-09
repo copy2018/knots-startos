@@ -35,7 +35,9 @@ pub struct ChainInfo {
 pub struct NetworkInfo {
     #[allow(dead_code)]
     connections: usize,
+    #[allow(dead_code)]
     connections_in: usize,
+    #[allow(dead_code)]
     connections_out: usize,
 }
 
@@ -113,7 +115,7 @@ pub struct Stat {
 
 fn sidecar(config: &Mapping, addr: &str) -> Result<(), Box<dyn Error>> {
     let mut stats = LinearMap::new();
-    // New section to display node uptime
+    // Node uptime with years included
     let uptime_info = std::process::Command::new("bitcoin-cli")
         .arg("-conf=/root/.bitcoin/bitcoin.conf")
         .arg("uptime")
@@ -125,11 +127,14 @@ fn sidecar(config: &Mapping, addr: &str) -> Result<(), Box<dyn Error>> {
             .parse::<u64>()
             .unwrap_or(0);
 
-        let days = uptime_seconds / 86400;
+        let years = uptime_seconds / 31_536_000;
+        let days = (uptime_seconds % 31_536_000) / 86400;
         let hours = (uptime_seconds % 86400) / 3600;
         let minutes = (uptime_seconds % 3600) / 60;
 
-        let uptime_formatted = if days > 0 {
+        let uptime_formatted = if years > 0 {
+            format!("{} years, {} days, {} hours, {} minutes", years, days, hours, minutes)
+        } else if days > 0 {
             format!("{} days, {} hours, {} minutes", days, hours, minutes)
         } else if hours > 0 {
             format!("{} hours, {} minutes", hours, minutes)
@@ -502,39 +507,62 @@ if mempool_info.status.success() {
             std::str::from_utf8(&info_res.stderr).unwrap_or("UNKNOWN ERROR")
         );
     }
-    let info_res = std::process::Command::new("bitcoin-cli")
+    // Detailed peer info by network type
+    let peer_info = std::process::Command::new("bitcoin-cli")
         .arg("-conf=/root/.bitcoin/bitcoin.conf")
-        .arg("getnetworkinfo")
+        .arg("getpeerinfo")
         .output()?;
-    if info_res.status.success() {
-        let info: NetworkInfo = serde_json::from_slice(&info_res.stdout)?;
-        // Assuming we have counts for each type of connection:
-        // - clearnet_in, clearnet_out for regular internet (IPv4 and IPv6 combined)
-        // - tor_in, tor_out for Tor network
-        // - i2p_in, i2p_out for I2P network
 
-        let clearnet_in = info.connections_in; // Placeholder for Clearnet inbound
-        let clearnet_out = info.connections_out; // Placeholder for Clearnet outbound
-        let tor_in = 0;  // Replace with actual Tor inbound count if available
-        let tor_out = 0; // Replace with actual Tor outbound count if available
-        let i2p_in = 0;  // Replace with actual I2P inbound count if available
-        let i2p_out = 0; // Replace with actual I2P outbound count if available
+    if peer_info.status.success() {
+        let peers: Vec<serde_json::Value> = serde_json::from_slice(&peer_info.stdout)?;
+        let mut clearnet_in = 0;
+        let mut clearnet_out = 0;
+        let mut tor_in = 0;
+        let mut tor_out = 0;
+        let mut i2p_in = 0;
+        let mut i2p_out = 0;
+
+        for peer in peers {
+            let network = peer["network"].as_str().unwrap_or("");
+            let inbound = peer["inbound"].as_bool().unwrap_or(false);
+
+            match network {
+                "ipv4" | "ipv6" => {
+                    if inbound {
+                        clearnet_in += 1;
+                    } else {
+                        clearnet_out += 1;
+                    }
+                }
+                "onion" => {
+                    if inbound {
+                        tor_in += 1;
+                    } else {
+                        tor_out += 1;
+                    }
+                }
+                "i2p" => {
+                    if inbound {
+                        i2p_in += 1;
+                    } else {
+                        i2p_out += 1;
+                    }
+                }
+                _ => {}
+            }
+        }
 
         let total_in = clearnet_in + tor_in + i2p_in;
         let total_out = clearnet_out + tor_out + i2p_out;
         let total_connections = total_in + total_out;
 
-        // Insert the peer connection summary into the stats
         stats.insert(
             Cow::from("Peer Connection Summary"),
             Stat {
                 value_type: "string",
                 value: format!(
-                    "Total Connections: {} | Clearnet: In-{}, Out-{} | Tor: In-{}, Out-{} | I2P: In-{}, Out-{}",
-                    total_connections,
-                    clearnet_in, clearnet_out,
-                    tor_in, tor_out,
-                    i2p_in, i2p_out
+                    "Total: {} | Clearnet: In-{}, Out-{} | Tor: In-{}, Out-{} | I2P: In-{}, Out-{}",
+                    total_connections, clearnet_in, clearnet_out, tor_in, tor_out, i2p_in, i2p_out
                 ),
                 description: Some(Cow::from("Summary of peer connections by type: Clearnet, Tor, I2P")),
                 copyable: false,
@@ -542,14 +570,13 @@ if mempool_info.status.success() {
                 masked: false,
             },
         );
-    } else if info_res.status.code() == Some(28) {
-        return Ok(());
     } else {
         eprintln!(
-            "Error updating network info: {}",
-            std::str::from_utf8(&info_res.stderr).unwrap_or("UNKNOWN ERROR")
+            "Error retrieving peer info: {}",
+            std::str::from_utf8(&peer_info.stderr).unwrap_or("UNKNOWN ERROR")
         );
     }
+
     serde_yaml::to_writer(
         std::fs::File::create("/root/.bitcoin/start9/.stats.yaml.tmp")?,
         &Stats {
@@ -563,6 +590,7 @@ if mempool_info.status.success() {
     )?;
     Ok(())
 }
+    
 
 fn inner_main(reindex: bool) -> Result<(), Box<dyn Error>> {
     while !Path::new("/root/.bitcoin/start9/config.yaml").exists() {
