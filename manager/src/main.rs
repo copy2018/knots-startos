@@ -33,6 +33,7 @@ pub struct ChainInfo {
 
 #[derive(Clone, Debug, serde::Deserialize)]
 pub struct NetworkInfo {
+    #[allow(dead_code)]
     connections: usize,
     connections_in: usize,
     connections_out: usize,
@@ -112,6 +113,47 @@ pub struct Stat {
 
 fn sidecar(config: &Mapping, addr: &str) -> Result<(), Box<dyn Error>> {
     let mut stats = LinearMap::new();
+    // New section to display node uptime
+    let uptime_info = std::process::Command::new("bitcoin-cli")
+        .arg("-conf=/root/.bitcoin/bitcoin.conf")
+        .arg("uptime")
+        .output()?;
+
+    if uptime_info.status.success() {
+        let uptime_seconds = String::from_utf8_lossy(&uptime_info.stdout)
+            .trim()
+            .parse::<u64>()
+            .unwrap_or(0);
+
+        let days = uptime_seconds / 86400;
+        let hours = (uptime_seconds % 86400) / 3600;
+        let minutes = (uptime_seconds % 3600) / 60;
+
+        let uptime_formatted = if days > 0 {
+            format!("{} days, {} hours, {} minutes", days, hours, minutes)
+        } else if hours > 0 {
+            format!("{} hours, {} minutes", hours, minutes)
+        } else {
+            format!("{} minutes", minutes)
+        };
+
+        stats.insert(
+            Cow::from("Node Uptime"),
+            Stat {
+                value_type: "string",
+                value: uptime_formatted,
+                description: Some(Cow::from("Total time the Bitcoin node has been running")),
+                copyable: false,
+                qr: false,
+                masked: false,
+            },
+        );
+    } else {
+        eprintln!(
+            "Error retrieving uptime info: {}",
+            std::str::from_utf8(&uptime_info.stderr).unwrap_or("UNKNOWN ERROR")
+        );
+    }
     if let (Some(user), Some(pass)) = (
         config
             .get(&Value::String("rpc".to_owned()))
@@ -222,65 +264,45 @@ fn sidecar(config: &Mapping, addr: &str) -> Result<(), Box<dyn Error>> {
         );
     }
 
-    // New section to fetch mempool statistics
-    let mempool_info = std::process::Command::new("bitcoin-cli")
-        .arg("-conf=/root/.bitcoin/bitcoin.conf")
-        .arg("getmempoolinfo")
-        .output()?;
+// New section to fetch and display a simplified mempool summary
+let mempool_info = std::process::Command::new("bitcoin-cli")
+    .arg("-conf=/root/.bitcoin/bitcoin.conf")
+    .arg("getmempoolinfo")
+    .output()?;
 
-    if mempool_info.status.success() {
-        let mempool_data: serde_json::Value = serde_json::from_slice(&mempool_info.stdout)?;
+if mempool_info.status.success() {
+    let mempool_data: serde_json::Value = serde_json::from_slice(&mempool_info.stdout)?;
 
-        let max_mempool = mempool_data["maxmempool"].as_u64().unwrap_or(0) as f64 / 1024_f64.powf(2.0); // Convert bytes to MB
-        let mempool_usage = mempool_data["usage"].as_u64().unwrap_or(0) as f64 / 1024_f64.powf(2.0); // Convert bytes to MB
-        let mempool_percent = if max_mempool > 0.0 {
-            (mempool_usage / max_mempool) * 100.0
-        } else {
-            0.0
-        };
-        let tx_count = mempool_data["size"].as_u64().unwrap_or(0); // Number of transactions
-
-        stats.insert(
-            Cow::from("Max Mempool Size"),
-            Stat {
-                value_type: "string",
-                value: format!("{:.2} MB", max_mempool),
-                description: Some(Cow::from("Maximum memory pool size")),
-                copyable: false,
-                qr: false,
-                masked: false,
-            },
-        );
-
-        stats.insert(
-            Cow::from("Current Mempool Usage"),
-            Stat {
-                value_type: "string",
-                value: format!("{:.2} MB ({:.2}%)", mempool_usage, mempool_percent),
-                description: Some(Cow::from("Current memory pool usage as a percentage of max size")),
-                copyable: false,
-                qr: false,
-                masked: false,
-            },
-        );
-
-        stats.insert(
-            Cow::from("Mempool Transaction Count"),
-            Stat {
-                value_type: "string",
-                value: format!("{}", tx_count),
-                description: Some(Cow::from("Current number of transactions in the mempool")),
-                copyable: false,
-                qr: false,
-                masked: false,
-            },
-        );
+    let max_mempool = mempool_data["maxmempool"].as_u64().unwrap_or(0) as f64 / 1024_f64.powf(2.0); // Convert to MB
+    let mempool_usage = mempool_data["usage"].as_u64().unwrap_or(0) as f64 / 1024_f64.powf(2.0); // Convert to MB
+    let mempool_percent = if max_mempool > 0.0 {
+        (mempool_usage / max_mempool) * 100.0
     } else {
-        eprintln!(
-            "Error retrieving mempool info: {}",
-            std::str::from_utf8(&mempool_info.stderr).unwrap_or("UNKNOWN ERROR")
-        );
-    }
+        0.0
+    };
+    let tx_count = mempool_data["size"].as_u64().unwrap_or(0); // Number of transactions
+
+    // Insert the simplified mempool summary
+    stats.insert(
+        Cow::from("Mempool Summary"),
+        Stat {
+            value_type: "string",
+            value: format!(
+                "{:.2}/{:.2} MB ({:.2}%), {} Transactions",
+                mempool_usage, max_mempool, mempool_percent, tx_count
+            ),
+            description: Some(Cow::from("Summary of current mempool usage and transaction count")),
+            copyable: false,
+            qr: false,
+            masked: false,
+        },
+    );
+} else {
+    eprintln!(
+        "Error retrieving mempool info: {}",
+        std::str::from_utf8(&mempool_info.stderr).unwrap_or("UNKNOWN ERROR")
+    );
+}
 
     // Existing code for blockchain and network info retrieval continues here...
     let info_res = std::process::Command::new("bitcoin-cli")
@@ -289,45 +311,31 @@ fn sidecar(config: &Mapping, addr: &str) -> Result<(), Box<dyn Error>> {
         .output()?;
     if info_res.status.success() {
         let info: ChainInfo = serde_json::from_slice(&info_res.stdout)?;
+        // Consolidated block height and sync progress information
+        // Extract values for current synced blocks, total headers, and sync progress percentage
+        let current_blocks = info.blocks;
+        let total_headers = info.headers;
+        let sync_progress = if current_blocks < total_headers {
+            100.0 * info.verificationprogress
+        } else {
+            100.0
+        };
+
+        // Insert the simplified blockchain sync summary
         stats.insert(
-            Cow::from("Block Height"),
+            Cow::from("Blockchain Sync Summary"),
             Stat {
                 value_type: "string",
-                value: format!("{}", info.headers),
-                description: Some(Cow::from("The current block height for the network")),
+                value: format!(
+                    "{}/{} ({:.2}%)",
+                    current_blocks, total_headers, sync_progress
+                ),
+                description: Some(Cow::from("Current synced block height out of total headers and sync progress")),
                 copyable: false,
                 qr: false,
                 masked: false,
             },
-        );
-        stats.insert(
-            Cow::from("Synced Block Height"),
-            Stat {
-                value_type: "string",
-                value: format!("{}", info.blocks),
-                description: Some(Cow::from("The number of blocks the node has verified")),
-                copyable: false,
-                qr: false,
-                masked: false,
-            },
-        );
-        stats.insert(
-            Cow::from("Sync Progress"),
-            Stat {
-                value_type: "string",
-                value: if info.blocks < info.headers {
-                    format!("{:.2}%", 100.0 * info.verificationprogress)
-                } else {
-                    "100%".to_owned()
-                },
-                description: Some(Cow::from(
-                    "The percentage of the blockchain that has been verified",
-                )),
-                copyable: false,
-                qr: false,
-                masked: false,
-            },
-        );
+        );   
         for (sf_name, sf_data) in info.softforks {
             let sf_name_pretty = sf_name.to_title_case();
             let status_desc = Some(Cow::from(format!(
@@ -500,12 +508,35 @@ fn sidecar(config: &Mapping, addr: &str) -> Result<(), Box<dyn Error>> {
         .output()?;
     if info_res.status.success() {
         let info: NetworkInfo = serde_json::from_slice(&info_res.stdout)?;
+        // Assuming we have counts for each type of connection:
+        // - clearnet_in, clearnet_out for regular internet (IPv4 and IPv6 combined)
+        // - tor_in, tor_out for Tor network
+        // - i2p_in, i2p_out for I2P network
+
+        let clearnet_in = info.connections_in; // Placeholder for Clearnet inbound
+        let clearnet_out = info.connections_out; // Placeholder for Clearnet outbound
+        let tor_in = 0;  // Replace with actual Tor inbound count if available
+        let tor_out = 0; // Replace with actual Tor outbound count if available
+        let i2p_in = 0;  // Replace with actual I2P inbound count if available
+        let i2p_out = 0; // Replace with actual I2P outbound count if available
+
+        let total_in = clearnet_in + tor_in + i2p_in;
+        let total_out = clearnet_out + tor_out + i2p_out;
+        let total_connections = total_in + total_out;
+
+        // Insert the peer connection summary into the stats
         stats.insert(
-            Cow::from("Connections"),
+            Cow::from("Peer Connection Summary"),
             Stat {
                 value_type: "string",
-                value: format!("{} ({} in / {} out)", info.connections, info.connections_in, info.connections_out),
-                description: Some(Cow::from("The number of peers connected (inbound and outbound)")),
+                value: format!(
+                    "Total Connections: {} | Clearnet: In-{}, Out-{} | Tor: In-{}, Out-{} | I2P: In-{}, Out-{}",
+                    total_connections,
+                    clearnet_in, clearnet_out,
+                    tor_in, tor_out,
+                    i2p_in, i2p_out
+                ),
+                description: Some(Cow::from("Summary of peer connections by type: Clearnet, Tor, I2P")),
                 copyable: false,
                 qr: false,
                 masked: false,
